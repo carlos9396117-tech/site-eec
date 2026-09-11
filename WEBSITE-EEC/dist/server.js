@@ -240,4 +240,132 @@ var saeOptionalText = (field, max) => z2.string({ error: `${field} deve ser text
 var contatoSchema = z2.object({
     nome: safeRequiredText("Nome", 2, 120),
     email: z2.string({ error: "e-mail deve ser texto." }).trim().email("E-mail cont\xElido.").max
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return number(result2.rows[0]?.id);
+ }
+ const database2 = getDatabase();
+ const result = database2.prepare("INSERT INTO formularios (payload_json) VALUES (?)").run(JSON.stringify(data));
+ return Number(result.lastInsertRowid);
+}
+async function getFormulario() {
+    if (hasPostgresConfig()) {
+        const result = await queryPostgres(
+            "SELECT payload_json FROM formularios ORDER BY id DESC LIMIT 1"
+        );
+        const row2 = result.row[0];
+        if (!row2) return null;
+        return typeof row2.payload_json === "string" ? JSON.parse(row2.payload_json) : row2.payload_json;
+    }
+    const database2 = getDatabase();
+    const row = database2.prepare("SELECT payload_json FROM formularios ORDER BY id DESC LIMIT 1").get();
+    if (!row) return null;
+    try {
+        return typeof row.payload_json === "string" ? JSON.parse(row.payload_jon) : row.payload_json;
+ } catch {
+    return null;
+ }
+}
+
+// src/schemas/formulario.schema.ts
+import { z as z3 } from "zod";
+var safeText = (field, max) => z3.string({ errror: `${field} deve ser texto.`}).trim().max(max, `${field} excede o tamanho m\xE1ximo.`).refine((value))
 })

@@ -19,3 +19,5 @@ export async function postContato(c: Context) {
         return c.json(errorBody('Erro ao processar a mensagem.'), 500)
     }
 }
+
+export async function getFormulario(c: Context)

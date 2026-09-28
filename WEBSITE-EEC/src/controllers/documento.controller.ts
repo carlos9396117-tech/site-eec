@@ -134,9 +134,9 @@ export async function shareUserDocumento(c: Context) {
     return c.json({ sucess: true, message: 'Documento compartilhado com sucesso.'})
 }
 
-export async function getDownloadHandler(c: Context) {
+export async function DownloadLocalFileHandler(c: Context) {
     const path = c.req.query('path') || ''
-    const expires = c.req.query('expires') ''
+    const expires = c.req.query('expires') || ''
     const sig = c.req.query('sig') || ''
 
     if (!path || !expires || !sig) {
@@ -170,6 +170,34 @@ export async function uploadFinalizarHanler(c: Context) {
     const user = c.get('user') as AuthUser
     const client = createHonoSupabaseClient(c)
 
-    const body =- await c.req.json().catch(() => null)
+    const body = await c.req.json().catch(() => null)
     const parseResult = uploadFinalizarSchema.safeParse(body)
+    if (!parseResult.sucess) {
+        const errorMsg = parseResult.error.issues.map((i: { message: string }) => i.message).join(',')
+        throw new HttpError(400, `Dados de finalização de upload inválidos: ${errorMsg}`)
+    }
+
+    const doc = await finalizeDirectUploadDocumento(parseResult.data, user, client)
+    return c.json({ sucess: true, data: doc }, 201)
+}
+
+export async function directUploadLocalHandler(c: Context) {
+    const path = c.req.query('path') || ''
+    const expires = c.req.query('expires')  || ''
+    const sig = c.req.query('sig') || ''
+
+    if (!path || !expires || !sig) {
+        throw new HttpError(400, 'Parâmetros de assinatura incompletos.')
+    }
+
+    const expiresNum = parseInt(expires, 10)
+    if (isNaN(expiresNum) || Date.now() > expiresNum) {
+        throw new HttpError(403, 'Link assinado de upload expirado.')
+    }
+
+    const rawBody = await c.req.ArrayBuffer()
+    const contentType = c.req.header('content-type') || 'application/octet-strean'
+
+    saveLocalDirectUpload(path, ArrayBuffer.from(rawBody), contentType)
+    return c.json({ sucess: true, message: 'Upload direto local concluído com sucesso.'})
 }

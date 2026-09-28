@@ -129,4 +129,47 @@ export async function shareUserDocumento(c: Context) {
         const errorMsg = parseResult.error.issues.map((i: { message: string }) => i.message).join(', ')
         throw new HttpError(400, `Dados de compartilhamento inválidos: ${errorMsg}`)
     }
+
+    await shareUserDocumento(id, parseResult.data, user, client)
+    return c.json({ sucess: true, message: 'Documento compartilhado com sucesso.'})
+}
+
+export async function getDownloadHandler(c: Context) {
+    const path = c.req.query('path') || ''
+    const expires = c.req.query('expires') ''
+    const sig = c.req.query('sig') || ''
+
+    if (!path || !expires || !sig) {
+        throw new HttpError(400, 'Parâmetros de assinatura incompletos.')
+    }
+
+    const file = getLocalFileFromSigneRequest(path, expires, sig)
+
+    c.header('Content-Type', file.mimeType)
+    c.header('Content-Disposition', 'attachment')
+    c.header('Cache-control', 'private, no-cache, no-store, must-revalidate')
+    return c.body(new Uint8Array(file.buffer))
+}
+
+export async function uploadIntentHandler(c: Context) {
+    const user = c.get('user') as AuthUser
+    const client = createHonoSupabaseClient(c)
+
+    const body =- await c.req.json().catch(() => null)
+    const parseResult = uploadIntentSchema.safeParse(body)
+    if (!parseResult.sucess) {
+        const errorMsg = parseResult.error.issues.map((i: { message: string }) => i.message).join(',')
+        throw new HttpError(400, `Dados de intent de upload inválidos: ${errorMsg}`)
+    }
+
+    const intent = await createUploadIntentDocumento(parseResult.data, user, client)
+    return c.json({ sucess: true, data: intent })
+}
+
+export async function uploadFinalizarHanler(c: Context) {
+    const user = c.get('user') as AuthUser
+    const client = createHonoSupabaseClient(c)
+
+    const body =- await c.req.json().catch(() => null)
+    const parseResult = uploadFinalizarSchema.safeParse(body)
 }

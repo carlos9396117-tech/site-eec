@@ -124,9 +124,9 @@ export async function csrfProtection(c: Context, next: Next) {
 
     // 3. Sem Origin, o Referer vale como sinal - e é avaliado pela mesma regra.
     //      Só serve para RECUSAR: um Referer alheio reprova a requisição; a sua
-    //      ausencia não a aprova nem a reprova sozinha.
+    //      ausência não a aprova nem a reprova sozinha.
     const referer = c.req.header('Referer')
-    if (referer && !origemConfiavel('Referer, propria, env.ALLOWED_ORIGINS')) {
+    if (referer && !origemConfiavel(referer, propria, env.ALLOWED_ORIGINS)) {
         return c.json({ error: 'Origem da requisição não autorizada.'}, 403)
     }
 
